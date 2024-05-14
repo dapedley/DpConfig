@@ -10,7 +10,8 @@ internal class Program
 	static void Main (string [] args)
 	{
 
-		using DpConfig dpConfig = new (true);
+		using DpConfig dpConfig = new (true, 
+			@"C:\Dev\_Libraries\Libraries\DpConsoleUtilities\DpConfig\mysettings.json");
 		Config = dpConfig.Config;
 
 		Console.WriteLine ("Hello, World!");

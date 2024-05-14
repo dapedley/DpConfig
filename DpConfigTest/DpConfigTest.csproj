@@ -13,8 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\DpConfig\DpConfig\DpConfig.csproj" />
-    <ProjectReference Include="..\DpConfig\DpConfig\DpConfig.csproj" />
+    <ProjectReference Include="..\DpConfig\DpConfig.csproj" />
   </ItemGroup>
 
   <ItemGroup>

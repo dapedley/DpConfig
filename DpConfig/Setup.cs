@@ -35,29 +35,44 @@ public partial class DpConfig : IDisposable
 	// The using is required to ensure that logging is properly flushed and disposed of.
 	//-------------------------------------------------------------------------------------
 
-	public DpConfig (bool withLogging = true)
+	public DpConfig (bool withLogging = true, string settingsPath = null)
 	{
+		//*** Set up configuration unless it already exists
+		if (Config is null) { SetupConfig (settingsPath); }
+
+		//*** If logging is required, set it up
 		if (withLogging) { SetupLogging (); }
-		else { SetupConfig (); }
 	}
 
 	//-------------------------------------------------------------------------------------
 	// SetupConfig
 	//-------------------------------------------------------------------------------------
-	public IConfigurationRoot SetupConfig (string settingsPath = "appSettings.json")
+	public IConfigurationRoot SetupConfig (string settingsPath = null)
 	{
+		//*** Does appsettings.json exist?
+		bool haveAppSettings = File.Exists ("appSettings.json");
+
+		//*** Is another settings path specified which is not appsettings.json?
+		bool haveOtherSettings = settingsPath != null && File.Exists (settingsPath) 
+																			&& settingsPath.ToLower() != "appsettings.json";
+
 		try {
-			//*** Creates a Configuration instance containing environment variables and
-			//    the content of the appsettings.json
-			Config = new ConfigurationBuilder ()
+			//*** Creates a Configuration instance containing environment variables
+			IConfigurationBuilder builder = new ConfigurationBuilder ()
 				.SetBasePath (Directory.GetCurrentDirectory ())
-				.AddEnvironmentVariables ()
-				.AddJsonFile (settingsPath)
-				.Build ();
+				.AddEnvironmentVariables ();
+
+			//*** If appsettings.json exists, add it
+			if (haveAppSettings) { builder.AddJsonFile ("appsettings.json"); }
+
+			//*** If another settings file is specified, add that
+			if (haveOtherSettings) { builder.AddJsonFile (settingsPath); }
+
+			//*** and build the configuration
+			Config = builder.Build ();
 		}
 		catch (Exception ex) {
 			throw new ArgumentException ($"Configuration Error - {ex.Message}");
-
 		}
 
 		return Config;
@@ -68,8 +83,6 @@ public partial class DpConfig : IDisposable
 	//-------------------------------------------------------------------------------------
 	public void SetupLogging ()
 	{
-		if (Config == null) { SetupConfig (); }
-
 		try {
 			//*** Then creates a logger from the "Serilog" section of the appsettings.json
 			Log.Logger = new LoggerConfiguration ()
